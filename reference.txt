@@ -1,2 +1,2 @@
-FER Dataset
+FER2013 Dataset
 https://www.kaggle.com/datasets/msambare/fer2013
