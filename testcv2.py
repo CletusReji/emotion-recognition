@@ -16,7 +16,7 @@ while True:
     frame = cv2.flip(frame, 1)
     faces = detectbox(frame)
     cv2.imshow('Camera', frame)
-    if cv2.waitKey(1) == 13 or cv2.getWindowProperty('Camera', cv2.WND_PROP_VISIBLE) < 1:
+    if cv2.waitKey(1) == 13 or cv2.getWindowProperty('Camera', cv2.WND_PROP_VISIBLE) == 0:
         break
 cam.release()
 cv2.destroyAllWindows()
