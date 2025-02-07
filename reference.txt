@@ -3,3 +3,6 @@ https://www.kaggle.com/datasets/msambare/fer2013
 
 face detection
 https://www.datacamp.com/tutorial/face-detection-python-opencv
+
+colours in tkinter
+https://www.plus2net.com/python/tkinter-colors.php
