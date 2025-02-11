@@ -6,3 +6,6 @@ https://www.datacamp.com/tutorial/face-detection-python-opencv
 
 colours in tkinter
 https://www.plus2net.com/python/tkinter-colors.php
+
+Xception Training Model
+https://github.com/elangarka/Regularized-Xception-FER-Extra-Training-Data-Step-Decay-Learning-Rate/blob/main/README.md
