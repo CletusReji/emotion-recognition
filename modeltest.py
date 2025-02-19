@@ -1,3 +1,6 @@
+#WORKING MODEL - 1
+#uses facial_emotion_model.h5
+
 import cv2
 import tkinter as tk
 from PIL import Image, ImageTk
