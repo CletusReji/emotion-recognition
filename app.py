@@ -8,8 +8,8 @@ from collections import deque, Counter
 app = Flask(__name__)
 
 # Load models
-model = tf.keras.models.load_model('newerfacemodel.keras')
-emotion_labels = ['angry', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'surprise']
+model = tf.keras.models.load_model('emo6model.keras')
+emotion_labels = ['angry', 'fear', 'happy', 'neutral', 'sad', 'surprise']
 
 # Initialize MediaPipe
 mp_face_detection = mp.solutions.face_detection
@@ -23,8 +23,8 @@ def generate_frames(camera_active):
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     
     # For smoothing emotion display
-    recent_emotions = deque(maxlen=5)
-    recent_confidences = deque(maxlen=5)
+    recent_emotions = deque(maxlen=3)
+    recent_confidences = deque(maxlen=3)
     
     try:
         while camera_active:
