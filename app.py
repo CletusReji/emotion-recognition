@@ -2,73 +2,104 @@ from flask import Flask, render_template, Response
 import cv2
 import numpy as np
 import tensorflow as tf
-from datetime import datetime
+import mediapipe as mp
+from collections import deque, Counter
 
 app = Flask(__name__)
 
 # Load models
-model = tf.keras.models.load_model('facemodel.keras')
-emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+model = tf.keras.models.load_model('newerfacemodel.keras')
+emotion_labels = ['angry', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'surprise']
+
+# Initialize MediaPipe
+mp_face_detection = mp.solutions.face_detection
 
 def generate_frames(camera_active):
-    if not camera_active:
-        # Create attractive placeholder image
-       ''' placeholder = np.zeros((480, 640, 3), dtype=np.uint8)
-        placeholder[:] = (41, 90, 168)  # Dark blue background
-        
-        # Add text and decoration
-        text = "Camera Stopped"
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        text_size = cv2.getTextSize(text, font, 1.5, 3)[0]
-        text_x = (placeholder.shape[1] - text_size[0]) // 2
-        text_y = (placeholder.shape[0] + text_size[1]) // 2
-        
-        cv2.putText(placeholder, text, (text_x, text_y), 
-                   font, 1.5, (255, 255, 255), 3, cv2.LINE_AA)
-        
-        # Add camera icon
-        cv2.circle(placeholder, (320, 180), 80, (255, 255, 255), 3)
-        cv2.circle(placeholder, (320, 180), 30, (255, 255, 255), -1)
-        
-        ret, buffer = cv2.imencode('.jpg', placeholder)
-        yield (b'--frame\r\n'
-              b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-        return'''
-
+    # Create a new face detection instance for this generator
+    face_detection = mp_face_detection.FaceDetection(min_detection_confidence=0.5)
+    
     camera = cv2.VideoCapture(0)
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     
-    while camera_active:
-        success, frame = camera.read()
-        if not success:
-            break
-            
-        frame = cv2.flip(frame, 1)
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-        
-        for (x, y, w, h) in faces:
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-            face_roi = gray[y:y+h, x:x+w]
-            face_roi = cv2.resize(face_roi, (48, 48))
-            face_roi = face_roi.astype('float32') / 255.0
-            face_roi = np.expand_dims(face_roi, axis=(0, -1))
-            
-            preds = model.predict(face_roi)
-            emotion = emotion_labels[np.argmax(preds)]
-            cv2.putText(frame, emotion, (x, y-10), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
-        
-        ret, buffer = cv2.imencode('.jpg', frame)
-        yield (b'--frame\r\n'
-              b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+    # For smoothing emotion display
+    recent_emotions = deque(maxlen=5)
+    recent_confidences = deque(maxlen=5)
     
-    camera.release()
+    try:
+        while camera_active:
+            success, frame = camera.read()
+            if not success:
+                break
+                
+            frame = cv2.flip(frame, 1)
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            results = face_detection.process(rgb_frame)
+            
+            ih, iw, _ = frame.shape
+
+            if results.detections:
+                for detection in results.detections:
+                    bboxC = detection.location_data.relative_bounding_box
+                    x = int(bboxC.xmin * iw)
+                    y = int(bboxC.ymin * ih)
+                    w = int(bboxC.width * iw)
+                    h = int(bboxC.height * ih)
+
+                    # Add padding around face ROI
+                    pad_x = int(0.1 * w)
+                    pad_y = int(0.1 * h)
+                    x1 = max(0, x - pad_x)
+                    y1 = max(0, y - pad_y)
+                    x2 = min(iw, x + w + pad_x)
+                    y2 = min(ih, y + h + pad_y)
+
+                    face_roi = frame[y1:y2, x1:x2]
+                    if face_roi.size == 0:
+                        continue
+
+                    try:
+                        gray_face = cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY)
+                        resized_face = cv2.resize(gray_face, (48, 48))
+                        normalized_face = resized_face / 255.0
+                        input_face = normalized_face.reshape(1, 48, 48, 1)
+
+                        emotion_predictions = model.predict(input_face, verbose=0)
+                        emotion_index = np.argmax(emotion_predictions)
+                        emotion = emotion_labels[emotion_index]
+                        confidence = emotion_predictions[0][emotion_index] * 100
+
+                        # Add prediction and confidence to rolling window
+                        recent_emotions.append(emotion)
+                        recent_confidences.append(confidence)
+
+                        # Get most common emotion and its average confidence in recent frames
+                        common_emotion = Counter(recent_emotions).most_common(1)[0][0]
+                        avg_confidence = np.mean([conf for emo, conf in zip(recent_emotions, recent_confidences) if emo == common_emotion])
+
+                        # Draw bounding box and emotion label with confidence
+                        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                        y_offset = y1 - 10 if y1 - 10 > 10 else y2 + 30
+                        cv2.putText(frame, f"{common_emotion}: {avg_confidence:.1f}%", (x1, y_offset),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+
+                    except Exception as e:
+                        print(f"Error processing face: {e}")
+            
+            ret, buffer = cv2.imencode('.jpg', frame)
+            yield (b'--frame\r\n'
+                  b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+    finally:
+        # Cleanup resources
+        camera.release()
+        face_detection.close()
 
 @app.route('/')
-def home():
+def welcome():
+    return render_template('welcome.html')
+
+@app.route('/home')
+def  home():
     return render_template('index.html')
 
 @app.route('/video_feed/<int:camera_active>')
