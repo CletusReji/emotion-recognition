@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to EmoVision</title>
-<<<<<<< Updated upstream
-    <link rel="icon" href="static/favicon.png" type="image/x-icon">
-=======
-
->>>>>>> Stashed changes
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -42,6 +37,7 @@
         
         .welcome-container {
             background: rgba(27, 38, 59, 0.7);
+            backdrop-filter: blur(12px);
             border-radius: 20px;
             padding: 2.5rem;
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
@@ -55,7 +51,17 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        
+        .welcome-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(72, 149, 239, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+            z-index: -1;
+        }
         
         h1 {
             font-size: clamp(1.8rem, 4vw, 2.8rem);
@@ -66,7 +72,6 @@
             color: transparent;
             position: relative;
             display: inline-block;
-
         }
         
         h1::after {
@@ -103,7 +108,7 @@
         }
         
         .feature {
-            background: linear-gradient(135deg, rgba(72, 149, 239, 0.4) 0%, transparent 100%);
+            background: rgba(67, 97, 238, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 15px;
             padding: 1.5rem;
@@ -113,10 +118,21 @@
             overflow: hidden;
         }
         
+        .feature::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(72, 149, 239, 0.1) 0%, transparent 100%);
+            z-index: -1;
+        }
         
         .feature:hover {
             transform: translateY(-8px);
-            
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border-color: rgba(72, 149, 239, 0.3);
         }
         
         .feature-icon {
@@ -165,13 +181,27 @@
             z-index: 1;
         }
         
-        
+        .btn-start::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(76, 201, 240, 0.8), rgba(0, 255, 55, 0.8));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
         
         .btn-start:hover {
             transform: translateY(-3px) scale(1.03);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
         
+        .btn-start:hover::before {
+            opacity: 1;
+        }
         
         .btn-start i {
             transition: transform 0.3s ease;
@@ -181,6 +211,10 @@
             transform: translateX(5px);
         }
 
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         @media (max-width: 768px) {
             .welcome-container {
@@ -206,7 +240,7 @@
         
         @keyframes floating {
             0% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
+            50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
         }
     </style>
@@ -247,6 +281,17 @@
         </a>
     </div>
 
-    
+    <script>
+        // Add subtle interactive effects
+        document.querySelector('.welcome-container').addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            document.querySelector('.welcome-container').style.transform = `rotate3d(${y}, ${x}, 0, 5deg)`;
+        });
+
+        document.querySelector('.welcome-container').addEventListener('mouseleave', () => {
+            document.querySelector('.welcome-container').style.transform = '';
+        });
+    </script>
 </body>
 </html>
