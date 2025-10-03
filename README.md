@@ -47,11 +47,11 @@ EmoVision aims to bridge the emotional gap between humans and machines by levera
 
 ### Welcome Page
 
-![welc](https://github.com/user-attachments/assets/7b09ed53-065e-478b-8373-741faca3dc47)
+![welc](https://github.com/user-attachments/assets/f31f04cd-0333-43d5-88fa-317c94d7d1d7)
 
 ### Home Page
 
-![home](https://github.com/user-attachments/assets/1079e455-8bc4-45e4-9e71-1a9a8ff6b9a3)
+![home](https://github.com/user-attachments/assets/b81150d8-36d9-4edc-9397-c09d780535ab)
 
 
 ## Contributors
