@@ -2,9 +2,7 @@
 
 ## Overview
 
-EmoVision is a real-time emotion detection system that uses deep learning techniques to identify human emotions with reasonable accuracy from facial expressions.
-
-EmoVision uses Computer Vision (OpenCV and MediaPipe) and a Convolutional Neural Network (CNN) trained on the FER2013 dataset to classify emotions from facial expressions.
+EmoVision is a real-time emotion detection system that uses Computer Vision (OpenCV and MediaPipe) and a Convolutional Neural Network (CNN) trained on the FER2013 dataset to classify human emotions with reasonable accuracy from facial expressions.
 
 The system works on live webcam input and shows a bounding box around the detected face with the predominant emotion (calculated over a sliding window for stability), along with the confidence percentage. Users can also capture snapshots with predicted labels.
 
